@@ -1,0 +1,111 @@
+{% extends "studentDashBoard.html" %}
+{% block content %}
+    <h3 class="m-2 p-3">Attendance Report</h3>
+    <div class="jumbotron jumbotron-fluid text-bg-primary m-3 p-3">
+        <div class="container m-3">
+            <h3>View Attendance</h3>
+            <div>
+            </div>
+        </div>
+    </div>
+    <div class="row m-4">
+        <div class="mx-auto col-10 col-md-8 col-lg-6">
+            {% csrf_token %} 
+            <div class="form-group">
+                <label class="form-label" for="Note">Subject :</label>
+                <select class="form-select form-select-lg mb-3 " aria-label=".form-select-lg example" id="subjectselect" name="subjectselect" required="required">
+                    {%for i in users %}
+                    <option value="{{i.subnm}}">{{i.subnm}}</option>
+                    {%endfor%}
+                    <option value="All">All</option>
+                </select>
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">From Date:</label>
+              <input type="date" class="form-control form-control-lg" id="fromDate" placeholder=".form-control-lg" name="fromdate" required="required"/>
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">To Date:</label>
+              <input type="date" class="form-control form-control-lg" id="ToDate" placeholder="Enter End Year" name="todate" required="required"/>
+            </div>
+            <div class="form-group ">
+                <button class="btn btn-primary btn-lg p-2" onclick="requestAttendance()">Request a Attendance</button>
+            </div>
+        </div>
+    </div>
+    <div class="jumbotron jumbotron-fluid text-bg-warning m-3 p-3">
+        <div class="container m-3">
+            <h3>Attendance</h3>
+        </div>
+    </div>
+    <div class="m-4">
+        <table class="table" id="addAttendance">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Subject</th>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    {% if flag %}
+        <script>
+            window.location.href = "/login/";
+        </script>
+    {%endif%}
+{% endblock content %}
+{% block js%}
+    <script>
+        function requestAttendance(){
+            subject = document.getElementById("subjectselect").value;
+            fromdate = document.getElementById("fromDate").value;
+            todate = document.getElementById("ToDate").value;
+            $.ajax({
+                method: "post",
+                url: "/myattendance/",
+                data:{
+                    'start_date':fromdate,
+                    'end_date':todate,
+                    'subjects':subject
+                },
+                success: function(response){
+                    var rows = '';
+                    if (response != '')
+                    {
+                        for (var i = 0; i < response.length; i++) 
+                        {
+                            var datetimeString = response[i].date ;
+                            var date = new Date(datetimeString);
+                            var formattedDate = date.toISOString().split('T')[0];
+                            no = 1
+                            console.log("not none",response[i])
+                            rows += '<tr>';
+                            rows += '<td>' + (i+1) + '</td>';
+                            rows += '<td>' + response[i].subject + '</td>';
+                            rows += '<td>' + formattedDate + '</td>';
+                            if (response[i].status == true){
+                            rows += '<td class="text-success">' + "Present" + '</td>';
+                            }
+                            else if(response[i].status == false){
+                                rows += '<td class="text-danger">' + "Absent" + '</td>';
+                            }
+                            rows += '</tr>';
+                            $('#addAttendance tbody').html(rows);
+                        }
+                    }
+                    else if (response == '' ){
+                        rows = '<tr><td colspan="6" class="text-center">No Data Found</td></tr>'
+                        $('#addAttendance tbody').html(rows);
+                    }
+                },
+                error: function () {
+                    console.log("error---")
+                }
+          });
+        }
+    </script>
+{% endblock js%}

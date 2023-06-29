@@ -1,0 +1,120 @@
+    
+{% extends "studentDashBoard.html" %}
+{% block content %}
+    <div class="jumbotron jumbotron-fluid text-bg-primary m-3 p-3">
+        <div class="container m-3">
+            <h1>Profile</h1>
+        </div>
+    </div>
+    {% if user %}
+        <div class="row m-4">
+            <div class="mx-auto col-10 col-md-8 col-lg-6">
+                <form>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">First Name:</label>
+                        <div class= "d-flex">
+                            <input type="text" class="form-control form-control-lg" id="Fname" value="{{user.first_name}}" name="Fname" disabled/>
+                            <i class="fa-solid fa-pen-to-square text-2xl m-3" onclick="editData(this)"></i>
+                            <i class="fa-solid fa-check text-2xl m-3" onclick="saveData(this)" hidden></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Last Name:</label>
+                        <div class= "d-flex">
+                            <input type="text" class="form-control form-control-lg" id="Lname" value="{{user.last_name}}" name="Lname" disabled />
+                            <i class="fa-solid fa-pen-to-square text-2xl m-3" name="lnamedit" onclick="editData(this)"></i>
+                            <i class="fa-solid fa-check text-2xl m-3" onclick="saveData(this)" hidden></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="Note">Email Address:</label>
+                        <div class= "d-flex">
+                            <input type="email" class="form-control" id="emailId" value="{{user.email}}" name="emailId" disabled />
+                            <i class="fa-solid fa-pen-to-square text-2xl m-3" onclick="editData(this)" ></i>
+                            <i class="fa-solid fa-check text-2xl m-3" onclick="saveData(this)" hidden></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label" for="Note">Profile Picture:</label>
+                        <input type="file" id="ProfilePicture"  />
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+    {% if flag %}
+        <script>
+            window.location.href = "/login/"
+        </script>
+    {% endif %}
+{% endblock content %}
+{% block js%}
+    <script>
+        function editData(button){
+            pre = button.previousElementSibling
+            next = button.nextElementSibling
+            $(pre).removeAttr('disabled')
+            $(button).attr('hidden','true')
+            $(next).removeAttr('hidden')
+        }
+
+        function saveData(button){
+            $.ajax({
+                url:"/editprofile/",
+                method:'patch',
+                data:{
+                    'fnm': $('#Fname').val(),
+                    'lnm': $("#Lname").val(),
+                    'email': $("#emailId").val(),
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success:function(){
+                    pre = button.previousElementSibling
+                    next = pre.previousElementSibling
+                    $(pre).removeAttr('hidden');
+                    $(button).attr('hidden','True');
+                    $(next).attr('disabled','true');
+                    document.location.reload();
+                },
+                error:function(){
+                    console.log("error-----")
+                }
+            })
+        }
+        document.getElementById('ProfilePicture').addEventListener('change', function(event) {
+            var previewOnProfile = document.getElementById("imgFileUpload");
+            const file = event.target.files[0];
+            var reader = new FileReader();
+
+            reader.addEventListener(
+              "load",
+              function () {
+                  previewOnProfile.src = reader.result;
+              },
+            );
+            if (file) {
+              reader.readAsDataURL(file);
+              const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+              const fdata = new FormData();
+              const xhttp = new XMLHttpRequest();
+              const header = "X-CSRFToken";
+              fdata.append("uploaded_file", file);
+              xhttp.open("POST", "/editprofile/");
+              xhttp.setRequestHeader(header, csrftoken);
+              xhttp.send(fdata);
+              xhttp.onload = () => {
+                  if (xhttp.readyState === 4) {
+                      const received = xhttp.responseText;
+                      if (xhttp.status === 200) {
+                          previewOnProfile.setAttribute("src", received);
+                          window.location.href = "/studentprofile/"
+                      } else {
+                        console.log("error here---")
+                      }
+                    }
+              };
+            }
+        });
+    </script>
+{% endblock js%}

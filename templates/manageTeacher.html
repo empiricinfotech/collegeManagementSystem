@@ -1,0 +1,188 @@
+{% extends "HodDashBoard.html" %}
+{% block content %}
+  {% if flag == 1 %}
+  <div class="jumbotron jumbotron-fluid text-bg-primary p-3">
+      <div class="container m-3">
+          <h2>Manage Staff</h2>
+      </div>
+  </div>
+  <div class="m-5">
+    <button  data-book-id="{{i.id}}"class="add-button btn btn-primary mb-4" data-toggle="modal" data-target="#exampleModal" id="span_name">Add Staff</button>
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Staff ID</th>
+          <th scope="col">First Name</th>
+          <th scope="col">Last Name</th>
+          <th scope="col">Email</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% csrf_token %}
+      
+          {% for i in users %}
+            <tr>
+                <th scope="row">
+                  {{i.id}}
+                </th>
+                <td>
+                  <span id="spanfnm{{i.id}}">
+                    {{i.first_name}} 
+                  </span>
+                  <input id="fnminput{{i.id}}" class="form-control" value={{i.first_name}} hidden/>
+                </td>
+                <td>
+                  <span id="spanlnm{{i.id}}">
+                    {{i.last_name}} 
+                  </span>
+                  <input id="lnminput{{i.id}}" class="form-control" value={{i.last_name}} hidden/>
+                </td>
+                <td>
+                  <span id="spanemail{{i.id}}">
+                    {{i.email}} 
+                  </span>
+                  <input id="emailinput{{i.id}}" class="form-control" value={{i.email}} hidden/>
+                </td>
+                <td>                
+                    <button class="btn btn-warning" id='edit_data{{i.id}}' onclick='editdata({{i.id}})' >edit</button>
+                    <button class="btn btn-primary" id='save_data{{i.id}}' onclick='savedata({{i.id}})'hidden>Save</button>
+                </td>  
+                <td>
+                    <button id="{{i.id}}" class="btn btn-danger" onclick='deletedata({{i.id}})'>Delete</button>
+                </td>
+            </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal">
+          <div class="jumbotron w-100 text-bg-primary p-1">
+            <div class="container">
+                <h2>Add Staff Details</h2>
+            </div>
+          </div>
+        </div>
+        <div class="modal-body m-30">
+          <form>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Email:</label>
+              <input type="email" class="form-control" id="floatingInputemail" placeholder="name@example.com" name="email">
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">First Name:</label>
+              <input type="text" class="form-control" id="floatingInputfirst_name" placeholder="First Name" name="first_name">
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Last Name:</label>
+              <input type="text" class="form-control" id="floatingInputlast_name" placeholder="Last Name" name="last_name">
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Password:</label>
+              <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password" >
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" onclick='postdata()'>Submit</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% elif flag == 2%}
+    <script>
+      window.location.href = '/login/';
+    </script>
+  {% endif %}
+{% endblock content %}
+{% block js%}
+  <script>
+      function editdata(e){
+          document.getElementById("edit_data"+e).hidden = true
+          document.getElementById("spanfnm"+e).hidden = true
+          document.getElementById("spanlnm"+e).hidden = true
+          document.getElementById("spanemail"+e).hidden = true
+          document.getElementById("save_data"+e).removeAttribute("hidden");
+          document.getElementById("fnminput"+e).removeAttribute("hidden");
+          document.getElementById("lnminput"+e).removeAttribute("hidden");
+          document.getElementById("emailinput"+e).removeAttribute("hidden");
+      }
+
+      function savedata(e){
+          email = document.getElementById("emailinput"+e).value;
+          fnm = document.getElementById("fnminput"+e).value;
+          lnm = document.getElementById("lnminput"+e).value;
+          $.ajax({
+              method: "patch",
+              url: "/teacher/"+e,
+              headers: {
+                  'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              data:{
+                  'pk':e,
+                  'email': email,
+                  'first_name':fnm,
+                  'last_name':lnm
+              },
+              success: function(){
+                  alert("Record Updated successfully")
+                  document.location = "/manageteacher/"
+              },
+              error: function () {
+                  document.location = "/manageteacher/"
+                 }
+        });
+      }
+
+      function deletedata(e){
+          $.ajax({
+              method: "delete",
+              url: "/teacher/"+e,
+              headers: {
+                  'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              data:{
+                  'pk':e,
+              },
+              success: function(){
+                  alert("Record Deleted successfully")
+                  document.location = "/manageteacher/"
+              },
+              error: function () {
+                  document.location = "/manageteacher/"
+                 }
+        });
+      }
+
+      function postdata(){
+          email = document.getElementById("floatingInputemail").value;
+          fnm = document.getElementById("floatingInputfirst_name").value;
+          lnm = document.getElementById("floatingInputlast_name").value;
+          pwd = document.getElementById("floatingPassword").value;
+          $.ajax({
+              method: "post",
+              url: "/teacher/",
+              headers: {
+                  'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              data:{
+                  'email': email,
+                  'first_name':fnm,
+                  'last_name':lnm,
+                  'password':pwd
+              },
+              success: function(){
+                  alert("Staff Created successfully")
+                  document.location = "/manageteacher/"
+              },
+              error: function () {
+                  document.location = "/manageteacher/"
+                 }
+        });
+      }
+  </script>
+{% endblock js%}
+

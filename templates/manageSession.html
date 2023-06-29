@@ -1,0 +1,168 @@
+{% extends "HodDashBoard.html" %}
+{% block content %}
+  <div class="jumbotron jumbotron-fluid text-bg-primary p-3">
+    <div class="container m-3">
+        <h2>Manage Session</h2>
+    </div>
+  </div>
+  <div class="m-5">
+    <button data-session-id="{{i.id}}"class="add-button btn btn-primary mb-4" data-toggle="modal" data-target="#exampleModal" id="span_session_nm">Add New Session
+    </button>
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Session ID</th>
+          <th scope="col">Session Start Date</th>
+          <th scope="col">Session End Date</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+          {% for i in users %}
+              <tr>
+                  <th scope="row">{{i.id}}</th>
+                  <td><span id="spanstartYear{{i.id}}">{{i.startYear}}</span><input type="date" id="startYearinput{{i.id}}"  hidden/></td>
+                  <td><span id="spanendYear{{i.id}}">{{i.endYear}}</span><input type="date" id="endYearinput{{i.id}}"  hidden/></td>
+                  <td>                
+                    <button class="btn btn-warning" id='upadteSessiondata{{i.id}}' onclick='updateSession({{i.id}})' >Edit</button>
+                    <button class="btn btn-primary" id='saveSessiondata{{i.id}}' onclick='saveSessiondata({{i.id}})'hidden>Save</button>
+                </td>  
+                <td>
+                    <button id="{{i.id}}" class="btn btn-danger" onclick='deleteSessiondata({{i.id}})'>Delete</button>
+                </td> 
+              </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title fw-bold text-start" id="exampleModalLabel">Session Year Details</h4>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="recipient-name" class="col-form-label">Start Year:</label>
+                <input type="date" class="form-control" id="floatingInputStartYear" placeholder="Enter Start Year" name="startyear">
+              </div>
+              <div class="form-group">
+                <label for="recipient-name" class="col-form-label">End Year:</label>
+                <input type="date" class="form-control" id="floatingInputEndYear" placeholder="Enter End Year" name="endyear">
+              </div>
+            </form>
+          </div>
+          /home/empiric-48/Desktop/collegeManagementSystem/templates
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick='postSessiondata()'>Submit</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% if flag %}
+      <script>
+          window.location.href = "/login/"
+      </script>
+    {% endif %}
+{% endblock content %}
+{% block js%}
+  <script>
+      function updateSession(e){
+          document.getElementById("upadteSessiondata"+e).hidden = true
+          document.getElementById("spanstartYear"+e).hidden = true
+          document.getElementById("spanendYear"+e).hidden = true
+          startYear = document.getElementById("spanstartYear"+e).innerText
+          endYear = document.getElementById("spanendYear"+e).innerText
+          document.getElementById("saveSessiondata"+e).removeAttribute("hidden");
+          document.getElementById("startYearinput"+e).removeAttribute("hidden");
+          document.getElementById("endYearinput"+e).removeAttribute("hidden");
+          const dateValue1 = new Date(startYear);
+          const year1 = dateValue1.getFullYear();
+          const month1 = (dateValue1.getMonth() + 1).toString().padStart(2, "0");
+          const day1 = dateValue1.getDate().toString().padStart(2, "0");
+
+          const dateValue2 = new Date(endYear);
+          const year2 = dateValue2.getFullYear();
+          const month2 = (dateValue2.getMonth() + 1).toString().padStart(2, "0");
+          const day2 = dateValue2.getDate().toString().padStart(2, "0");
+          const formattedDate1 = `${year1}-${month1}-${day1}`;
+          const formattedDate2 = `${year2}-${month2}-${day2}`;
+          console.log(formattedDate1,"date vakue one ",formattedDate2)
+          document.getElementById("startYearinput"+e).value = formattedDate1;
+          document.getElementById("endYearinput"+e).value = formattedDate2;
+      }
+
+      function saveSessiondata(e){
+          startYear = document.getElementById("startYearinput"+e).value;
+          endYear = document.getElementById("endYearinput"+e).value;
+          $.ajax({
+              method: "patch",
+              url: "/session/"+e,
+              headers: {
+                  'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              data:{
+                  'pk':e,
+                  'startYear': startYear,
+                  'endYear': endYear,
+              },
+              success: function(){
+                  alert("Record Updated successfully !!")
+                  document.location = "/managesession/"
+              },
+              error: function () {
+                  alert("Invalid Data !!")
+                  document.location = "/managesession/"
+                 }
+        });
+      }
+
+      function deleteSessiondata(e){
+          $.ajax({
+              method: "delete",
+              url: "/session/"+e,
+              headers: {
+                  'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              data:{
+                  'pk':e,
+              },
+              success: function(){
+                  alert("Record Deleted !!")
+                  document.location = "/managesession/"
+              },
+              error: function () {
+                  alert("Failed !!")
+                  document.location = "/managesession/"
+                 }
+        });
+      }
+
+      function postSessiondata(){
+          startyear = document.getElementById("floatingInputStartYear").value;
+          endyear = document.getElementById("floatingInputEndYear").value;
+          $.ajax({
+              method: "post",
+              url: "/session/",
+              headers: {
+                  'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              data:{
+                  'startYear': startyear,
+                  'endYear':endyear
+              },
+              success: function(){
+                  alert("Record Created successfully !!")
+                  document.location = "/managesession/"
+              },
+              error: function () {
+                  alert("Invalid Data !!")
+                  document.location = "/managesession/"
+                 }
+        });
+      }
+  </script>
+{% endblock js%}

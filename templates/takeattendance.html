@@ -1,0 +1,245 @@
+{% extends "teacherDashBoard.html" %}
+{% load admin_list %}
+{% load static %}
+{% block content %}
+  <h3 class="m-2 pt-5 pb-3">Attendanc</h3>
+  <div class="jumbotron jumbotron-fluid text-bg-primary m-3 p-3">
+    <div class="container m-3">
+        <h3>Take Attendance</h3>
+    </div>
+  </div>
+  <div class="row m-4">
+      <div class="mx-auto col-10 col-md-8 col-lg-6">
+        <form>
+          <div class="form-group">
+            {% csrf_token %}
+            <label for="recipient-name" class="col-form-label">Subject :</label>
+            <select class="form-control form-control-lg form-select form-select-lg mb-3 w-100" aria-label=".form-select-lg example" id="subjectselect" name="subjectselect" required>
+              {% if sub %}
+                {%for i in sub%}
+                  <option value="{{i.subName}}">{{i.subName}}</option>
+                {%endfor%}
+              {% else %}
+                <option value="None">None</option>
+              {% endif %}
+            </select>
+          </div>
+          <div class="form-group">
+            <h3>Session Year</h3>
+            <select class="form-select form-select-lg mb-3 w-100" aria-label=".form-select-lg example" id="sessionselect"name="sessionselect" required>
+              {%for i in session%}
+              <option value="{{i.id}}">{{i}}</option>
+              {%endfor%}
+            </select>
+            </div>
+            <div class="form-group ">
+              <button class="btn btn-primary btn-lg" id='fetchstudent'>Fetch students
+              </button>
+            </div>
+        </form>
+      </div>
+  </div>
+  <div class="jumbotron jumbotron-fluid text-bg-warning m-3 p-3">
+    <div class="container m-3">
+        <h3>Attendance Report</h3>
+    </div>
+  </div>
+  <div class="m-4">
+      <table class="table" id="attendanceTable">
+          <thead>
+            <tr>
+              <th scope="col">No</th>
+              <th scope="col">Student Id</th>
+              <th scope="col">Student Name</th>
+              <th scope="col">Email</th>
+              <th scope="col"></th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+      </table>
+  </div> 
+  {% if flag %}
+    <script>
+        window.location.href = "/login/"
+    </script>
+  {% endif %} 
+{% endblock content %}  
+{% block js%}
+  <script>
+    $('#fetchstudent').click(function(event) 
+      {
+          event.preventDefault();
+          var subject1 = $('#subjectselect').val();
+          var Year1 = $('#sessionselect').val();
+            $.ajax({
+            url: '/subattendance/', 
+            method: 'POST',
+            data: {
+              csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+              subjectselect:subject1,
+              sessionselect:Year1
+            },
+            success: function(response) 
+            {
+              var list1 = response[0]
+              var list2 = response[1] 
+              var rows = '';
+              if (list1.length == 0){
+                console.log("99999999")
+                rows = '<tr><td colspan="6" class="text-center">No Data Found</td></tr>'
+                $('#attendanceTable tbody').html(rows);
+              }
+              else
+              {
+                if (list2 && list2.length > 0) 
+                  {
+                    const userExists = list1.some(user => 
+                      {
+                        const userId = user.user_id;
+                        const userStatus = list2.find(([id, status]) => id === userId);
+                        return userStatus !== undefined;
+                      }
+                    );
+                    
+                    if (userExists) 
+                    {
+                        list1.forEach((user,index) => 
+                        {
+                          const userId = user.user_id;
+                          const userStatus = list2.find(([id, status]) => id === userId);
+                          no = 1 
+                          if (userStatus !== undefined) 
+                          {
+                            const status = userStatus[1];
+                            if (userStatus[1] == true )
+                            {
+                              rows += '<tr id="row-' + index + '">';
+                              rows += '<td>' + index + '</td>';
+                              rows += '<td class = "user_id">' + user.user_id + '</td>';
+                              rows += '<td class = "fnmlnm">' + user.fnm + '   ' + user.lnm + '</td>';
+                              rows += '<td class = "email">' + user.email + '</td>';
+                              rows += '<td><button class="presentBtn btn btn-warning" id="presentbtn-'+ no +'" disabled> Present </button></td>';
+                              rows += '<td><button class="absentBtn btn btn-danger" id="absentbtn-'+ no +'"> Absent </button></td>';
+                              rows += '</tr>';
+                              $('#attendanceTable tbody').html(rows);
+                            }
+                            else if  (userStatus[1] == false )
+                            {
+                              rows += '<tr id="row-' + index + '">';
+                              rows += '<td>' + index + '</td>';
+                              rows += '<td class = "user_id">' + user.user_id + '</td>';
+                              rows += '<td class = "fnmlnm">' + user.fnm + '   ' + user.lnm + '</td>';
+                              rows += '<td class = "email">' + user.email + '</td>';
+                              rows += '<td><button class="presentBtn btn btn-warning" id="presentbtn-'+ no +'" > Present </button></td>';
+                              rows += '<td><button class="absentBtn btn btn-danger" id="absentbtn-'+ no +'" disabled> Absent </button></td>';
+                              rows += '</tr>';
+                              $('#attendanceTable tbody').html(rows);
+                            }
+                          }
+                          else {
+                            rows += '<tr id="row-' + index + '">';
+                            rows += '<td>' + index + '</td>';
+                            rows += '<td class = "user_id">' + user.user_id + '</td>';
+                            rows += '<td class = "fnmlnm">' + user.fnm + '   ' + user.lnm + '</td>';
+                            rows += '<td class = "email">' + user.email + '</td>';
+                            rows += '<td><button class="presentBtn btn btn-warning" id="presentbtn-'+ no +'" > Present </button></td>';
+                            rows += '<td><button class="absentBtn btn btn-danger" id="absentbtn-'+ no +'" > Absent </button></td>';
+                            rows += '</tr>';
+                            $('#attendanceTable tbody').html(rows);
+                          }
+                        }
+                      );
+                    }
+                  }
+                else 
+                  {
+                    for (var i = 0; i < list1.length; i++) 
+                    {
+                      var userId = list1[i]['user_id'];
+                      no = i+1 
+                      rows += '<tr id="row-' + i + '">';
+                      rows += '<td>' + no + '</td>';
+                      rows += '<td class = "user_id">' + list1[i].user_id + '</td>';
+                      rows += '<td class = "fnmlnm">' + list1[i].fnm + '   ' + list1[i].lnm + '</td>';
+                      rows += '<td class = "email">' + list1[i].email + '</td>';
+                      rows += '<td><button class="presentBtn btn btn-warning" id="presentbtn-'+ i +'"> Present </button></td>';
+                      rows += '<td><button class="absentBtn btn btn-danger" id="absentbtn-'+ i +'"> Absent </button></td>';
+                      rows += '</tr>';
+                      $('#attendanceTable tbody').html(rows);
+                    }
+                  }
+                  $('.presentBtn').click(function() 
+                    {
+                        var myId = $(this);
+                        var buttonId = myId.attr('id');
+                        button = document.getElementById(buttonId)
+                        var studentId = $(this).closest('tr').find('.user_id').text();
+                        var BtnAbsent = $(this).closest('tr').find('.absentBtn');
+                        Absentbtn = BtnAbsent.attr('id');
+                        Absentbtn1 = document.getElementById(Absentbtn)
+                        $.ajax({
+                          type: "POST",
+                          url: "/takeattendance/",
+                          data: {
+                              csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+                              studentId:studentId,
+                              subjectId:subject1,
+                              year:Year1,
+                              status:'True',
+                          },
+                          success: function()
+                          {
+                              $(button).prop('disabled', true);
+                              $(Absentbtn1).prop('disabled',false)
+                          },
+                          error: function () 
+                          {
+                              alert("Unique Book No already Exists");
+                          }
+                        });
+                    }
+                  );
+                  $('.absentBtn').click(function() 
+                    {
+                      var myId = $(this);
+                      var buttonId = myId.attr('id');
+                      button = document.getElementById(buttonId)
+                      var studentId = $(this).closest('tr').find('.user_id').text();
+                      var BtnPresent = $(this).closest('tr').find('.presentBtn');
+                      presentbtn = BtnPresent.attr('id');
+                      presentbtn1 = document.getElementById(presentbtn)
+                      $.ajax({
+                        type: "POST",
+                        url: "/takeattendance/",
+                        data: {
+                            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+                            studentId:studentId,
+                            subjectId:subject1,
+                            year:Year1,
+                            status:'False',
+                        },
+                        success: function()
+                        {
+                          $(button).prop('disabled', true);
+                          $(presentbtn1).prop('disabled',false)
+                        },
+                        error: function () 
+                        {
+                            alert("Unique Book No already Exists");
+                        }
+                      });
+                    }
+                  );
+              }
+            },
+            error: function() 
+            {
+              console.log("herer error----")
+            }
+        });
+      }
+    );
+  </script>
+{% endblock js%}

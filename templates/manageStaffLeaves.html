@@ -1,0 +1,88 @@
+{% extends "HodDashBoard.html" %}
+{% block content %}
+    <div class="jumbotron jumbotron-fluid text-bg-primary p-3">
+      <div class="container m-3">
+          <h2>Staff Leave Requests</h2>
+      </div>
+    </div>
+    <div class="m-5">
+      <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Leave ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Reason</th>
+            <th scope="col">Leave Date</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for i in users %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td>{{i.Teacher}}</td>
+                    <td>{{i.leave_msg}}</td>
+                    <td>{{i.leave_date}}</td>
+                    <td><button type="button" class="btn btn-primary" onclick='AcceptRequest({{i.id}})'>Accept</button></td>
+                    <td><button type="button" class="btn btn-danger" onclick='RejectRequest({{i.id}})'>Reject</button></td> 
+                </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+      {% if flag %}
+        <script>
+            window.location.href = "/login/"
+        </script>
+      {% endif %}
+{% endblock content %}
+{% block js%}
+  <script>
+      function AcceptRequest(e){
+        $.ajax({
+          method:'patch',
+          url: "/staffleave/"+e,
+          headers: {
+              'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+          },
+          data:{
+            'pk':e,
+            "status": "Approve"
+          },
+          success: function(){
+            alert("Request Accepted !!")
+            document.location = "/staffleaverequests/"
+          },
+          error: function () {
+            alert("Failed!!")
+            document.location = "/staffleaverequests/"
+          }
+        
+        });
+      }
+    
+      function RejectRequest(e){
+        console.log("---e",e)
+        $.ajax({
+          method:'patch',
+          url: "/staffleave/"+e,
+          headers: {
+              'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+          },
+          data:{
+            'pk':e,
+            'status': "Reject"
+          },
+          success: function(){
+            alert("Request Rejected !!")
+            document.location = "/staffleaverequests/"
+          },
+          error: function () {
+            alert("Failed!!")
+            document.location = "/staffleaverequests/"
+          }
+        });
+      }
+  </script>
+{% endblock js%}

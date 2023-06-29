@@ -1,0 +1,174 @@
+{% extends "HodDashBoard.html" %}
+{% block content %}
+    <div class="jumbotron jumbotron-fluid text-bg-primary p-3">
+      <div class="container m-3">
+          <h2>Manage Subject</h2>
+      </div>
+    </div>
+    <div class="m-5">
+        <button data-subject-id="{{i.id}}"class="add-button btn btn-primary mb-4" data-toggle="modal" data-target="#exampleModal" id="span_course_name">Add Subject</button> 
+        <table class="table">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Subject ID</th>
+                <th scope="col">Subject Name</th>
+                <th scope="col">Teacher</th>
+                <th scope="col"></th>
+              </tr> 
+            </thead>
+            <tbody>
+              {% for i in subject.data %}
+                  <tr>
+                      <th>{{i.id}}</th>
+                      <td><span id="spanSubNm{{i.id}}">{{i.subName}} </span><input id="SubNminput{{i.id}}" class="rounded p-1" value="{{i.subName}}" hidden/></td>
+                      <td>
+                        <select select class="form-select form-select-lg mb-3" aria-label=".form-select-lg  example" id="teacherselectdrop-{{i.id}}" name="teacherselectdrop" required disabled>
+                            {% for j in subject.teacher%}
+                              {% if i.teacher == j.pk %}
+                                <option value="{{j.pk}}" selected>{{j}}</option>
+                              {% else %}
+                                <option value="{{j.pk}}">{{j}}</option>
+                              {% endif %}
+                            {%endfor%}
+                        </select>
+                      </td>
+                      <td>                
+                          <button class="btn btn-warning" id='upadteSubdata{{i.id}}' onclick='updatesubject({{i.id}})' >Edit</button>
+                          <button class="btn btn-primary" id='saveSubdata{{i.id}}' onclick='savesubjectdata({{i.id}})'hidden>Save</button>
+                      </td>  
+                      <td>
+                          <button id="{{i.id}}" class="btn btn-danger" onclick='deletesubjectdata({{i.id}})'>Delete</button>
+                      </td> 
+                  </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title fw-bold text-start" id="exampleModalLabel">Subject Details</h4>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="recipient-name" class="col-form-label">Subject Name:</label>
+                <input type="text" class="form-control" id="floatingInputSubjectNm" placeholder="Enter Subject Name" name="Subjectnm">
+              </div>
+              <div class="form-group">
+                <label for="recipient-name" class="col-form-label">Course</label>
+                <select class="form-select form-select-lg mb-3" aria-label=".form-select-lg  example" id="courseselect" name="courseselect" required>
+                  {%for j in subject.course %}
+                      <option class="p-4 mb-3" value="{{j.pk}}" selected>{{j}}</option>
+                  {%endfor%}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="recipient-name" class="col-form-label">Teacher</label>
+                <select class="form-select form-select-lg mb-3" aria-label=".form-select-lg  example" id="teacherselect" name="teacherselect" required>
+                  {%for j in subject.teacher %}
+                      <option class="p-4 mb-3" value="{{j.pk}}" selected>{{j}}</option>
+                  {%endfor%}
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick='postsubjectdata()'>Submit</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% if flag %}
+      <script>
+        window.location.href = "/login/"
+      </script>
+    {% endif %}
+{% endblock content %}
+{% block js%}
+    <script>
+        function updatesubject(e){
+            document.getElementById("upadteSubdata"+e).hidden = true
+            document.getElementById("spanSubNm"+e).hidden = true
+            document.getElementById("saveSubdata"+e).removeAttribute("hidden");
+            document.getElementById("SubNminput"+e).removeAttribute("hidden");
+            $('select').removeAttr('disabled');
+        }
+    
+        function savesubjectdata(e){
+            Subject = document.getElementById("SubNminput"+e).value;
+            Course = document.getElementById("SubNminput"+e).value;
+            Teacher = document.getElementById("teacherselectdrop-"+e).value;
+            $.ajax({
+                method: "patch",
+                url: "/subject/"+e,
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                data:{
+                    'pk':e,
+                    'subName': Subject,
+                    'teacher': Teacher,
+                },
+                success: function(){
+                    alert("Record Updated successfully !!")
+                    document.location = "/managesubject/"
+                },
+                error: function () {
+                    alert("Invalid Data !!")
+                    document.location = "/managesubject/"
+                   }
+          });
+        }
+    
+        function deletesubjectdata(e){
+            $.ajax({
+                method: "delete",
+                url: "/subject/"+e,
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                data:{
+                    'pk':e,
+                },
+                success: function(){
+                    alert("Record Deleted successfully !!")
+                    document.location = "/managesubject/"
+                },
+                error: function () {
+                    alert("Deletion Failed !!")
+                    document.location = "/managesubject/"
+                   }
+          });
+        }
+    
+        function postsubjectdata(){
+            SubNm = document.getElementById("floatingInputSubjectNm").value;
+            Course = document.getElementById("courseselect").value;
+            Teacher = document.getElementById("teacherselect").value;
+            $.ajax({
+                method: "post",
+                url: "/subject/",
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                data:{
+                    'subName': SubNm,
+                    'course':Course,
+                    'teacher':Teacher
+                },
+                success: function(){
+                    alert("Record Created !!")
+                    document.location = "/managesubject/"
+                },
+                error: function () {
+                    alert("Invalid Data !!")
+                    document.location = "/managesubject/"
+                   }
+          });
+        }
+    </script>
+{% endblock js%}
+

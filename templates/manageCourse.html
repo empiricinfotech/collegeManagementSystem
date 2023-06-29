@@ -1,0 +1,161 @@
+{% extends "HodDashBoard.html" %}
+{% block content %}
+  <div class="jumbotron jumbotron-fluid text-bg-primary p-3">
+    <div class="container m-3">
+        <h2>Manage Course</h2>
+    </div>
+  </div>
+  <div class="m-5">
+    <button  data-course-id="{{i.id}}"class="add-button btn btn-primary mb-4" data-toggle="modal" data-target="#exampleModal" id="span_course_name">Add New Course</button>
+      <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">Course Id</th>
+              <th scope="col">Course Name</th>
+              <th scope="col">Session Year</th>
+              <th></th>
+              <th></th>
+            </tr> 
+          </thead>
+          <tbody>
+              {% for i in users.data %}
+                  <tr>
+                      <th scope="row">{{i.id}}</th>
+                      <td>
+                        <span id="spancoursename{{i.id}}">{{i.courseName}}</span>
+                        <input id="courseinput{{i.id}}" class="form-control" value="{{i.courseName}}" hidden/>
+                      </td>
+                      <td>
+                        <span id="spansessionyear{{i.id}}">{{i.sessionYear.startYear}} To {{i.sessionYear.endYear}}</span>
+                        <div class="d-flex">
+                          <input type="date" id="sessioninput1{{i.id}}" class="form-control " value="{{i.sessionYear.startYear}}"  hidden/>
+                          <input type="date" id="sessioninput2{{i.id}}" class="form-control "  value="{{i.sessionYear.endYear}}" hidden/>
+                          <input id="sessionyearinput{{i.id}}" value="{{i.sessionYear.id}}" hidden/> 
+                        </div>
+                      </td>
+                      <td>                    
+                        <button class="btn btn-warning" id='updateCourse{{i.id}}' onclick='updatecourse({{i.id}})' >Edit</button>
+                        <button class="btn btn-primary" id='saveCourse{{i.id}}' onclick='savecoursedata({{i.id}})'hidden>Save</button>
+                      </td>
+                      <td><button id="{{i.id}}" class="btn btn-danger" onclick='deletecoursedata({{i.id}})'>Delete</button></td>  
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title fw-bold text-start" id="exampleModalLabel">Course Details</h4>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Course Name:</label>
+              <input type="text" class="form-control" id="floatingInputcourseNm" placeholder="Enter Course Name" name="coursenm">
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Session Year:</label>
+              <input type="date" id="floatingInputSessionYear1" />
+              <input type="date" id="floatingInputSessionYear2" />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" onclick='postcoursedata()'>Submit</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+{% block js%}
+  <script>
+    function updatecourse(e){
+        document.getElementById("updateCourse"+e).hidden = true
+        document.getElementById("spancoursename"+e).hidden = true
+        document.getElementById("spansessionyear"+e).hidden = true
+        document.getElementById("saveCourse"+e).removeAttribute("hidden");
+        document.getElementById("courseinput"+e).removeAttribute("hidden");
+        document.getElementById("sessioninput1"+e).removeAttribute("hidden");
+        document.getElementById("sessioninput2"+e).removeAttribute("hidden");
+    }
+
+    function savecoursedata(e){
+        course = document.getElementById("courseinput"+e).value;
+        demo =  document.getElementById("sessioninput1"+e)
+        startyear = document.getElementById("sessioninput1"+e).value;
+        endyear = document.getElementById("sessioninput2"+e).value;
+        $.ajax({
+            method: "patch",
+            url: "/course/"+e,
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            data:{
+                'id':e,
+                'courseName': course,
+                'startyear': startyear,
+                'endyear':endyear
+            },
+            success: function(){
+                alert("Record Updated successfully")
+                document.location = "/managecourse/"
+            },
+            error: function () {
+                alert("Invalid Data !!")
+                document.location = "/managecourse/"
+               }
+      });
+    }
+
+    function deletecoursedata(e){
+        $.ajax({
+            method: "delete",
+            url: "/course/"+e,
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            data:{
+                'pk':e,
+            },
+            success: function(){
+                alert("Record Deleted !")
+                document.location = "/managecourse/"
+            },
+            error: function () {
+                alert("Failed !!")
+                document.location = "/managecourse/"
+               }
+      });
+    }
+
+    function postcoursedata(){
+        Course = document.getElementById("floatingInputcourseNm").value;
+        startYear = document.getElementById("floatingInputSessionYear1").value;
+        endYear = document.getElementById("floatingInputSessionYear2").value;
+        $.ajax({
+            method: "post",
+            url: "/course/",
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            data:{
+                'courseName': Course,
+                'startYear':startYear,
+                'endYear':endYear,
+            },
+            success: function(){
+                alert("Record Created !!")
+                document.location = "/managecourse/"
+            },
+            error: function () {
+                alert("Invalid Data !!")
+                document.location = "/managecourse/"
+               }
+      });
+    }
+  </script>
+{% endblock js%}

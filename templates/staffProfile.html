@@ -1,0 +1,83 @@
+    
+{% extends "teacherDashBoard.html" %}
+{% block content %}
+    {% load static %}
+    <div class="jumbotron jumbotron-fluid text-bg-primary p-3">
+        <div class="container m-3">
+            <h2>Profile</h2>
+        </div>
+    </div>
+    {% if user %}
+        <div class="row m-4">
+            <div class="mx-auto col-10 col-md-8 col-lg-6">
+                <form>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">First Name:</label>
+                        <div class= "d-flex">
+                            <input type="text" class="form-control form-control-lg" id="Fname" value="{{user.first_name}}" name="Fname" disabled/>
+                            <i class="fa-solid fa-pen-to-square text-2xl m-3" onclick="editData(this)"></i>
+                            <i class="fa-solid fa-check text-2xl m-3" onclick="saveData(this)" hidden></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Last Name:</label>
+                        <div class= "d-flex">
+                            <input type="text" class="form-control form-control-lg" id="Lname" value="{{user.last_name}}" name="Lname" disabled />
+                            <i class="fa-solid fa-pen-to-square text-2xl m-3" name="lnamedit" onclick="editData(this)"></i>
+                            <i class="fa-solid fa-check text-2xl m-3" onclick="saveData(this)" hidden></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="Note">Email Address:</label>
+                        <div class= "d-flex">
+                            <input type="email" class="form-control" id="emailId" value="{{user.email}}" name="emailId" disabled />
+                            <i class="fa-solid fa-pen-to-square text-2xl m-3" onclick="editData(this)" ></i>
+                            <i class="fa-solid fa-check text-2xl m-3" onclick="saveData(this)" hidden></i>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+    {% if flag %}
+        <script>
+            window.location.href = "/login/"
+        </script>
+    {% endif %}
+{% endblock content %}
+{% block js%}
+    <script>
+        function editData(button){
+            pre = button.previousElementSibling
+            next = button.nextElementSibling
+            $(pre).removeAttr('disabled')
+            $(button).attr('hidden','true')
+            $(next).removeAttr('hidden')
+        }
+
+        function saveData(button){
+            $.ajax({
+                url:"/editprofile/",
+                method:'patch',
+                data:{
+                    'fnm': $('#Fname').val(),
+                    'lnm': $("#Lname").val(),
+                    'email': $("#emailId").val(),
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success:function(){
+                    pre = button.previousElementSibling
+                    next = pre.previousElementSibling
+                    $(pre).removeAttr('hidden');
+                    $(button).attr('hidden','True');
+                    $(next).attr('disabled','true');              
+                    document.location.reload();
+                },
+                error:function(){
+                    console.log("error-----")
+                }
+            })        
+        }
+    </script>
+{% endblock js%}

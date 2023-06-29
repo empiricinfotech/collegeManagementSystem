@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      {% load static %}
+      <!--Font Awesome CDN-->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+      <!--Bootstrap CDN-->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    
+      <style>
+        body {
+          margin: 0;
+          font-family: "Lato", sans-serif;
+        }
+      
+      .sidebar {
+        margin: 0;
+        padding: 0;
+        width: 250px;
+        background-color: #5a5d61;
+        position: fixed;
+        height: 100%;
+        overflow: auto;
+      }
+    
+      .sidebar a {
+        display: block;
+        color: white;
+        padding: 16px;
+        font-size: 15px;
+        text-decoration: none;
+      }
+    
+      .sidebar i {
+        display: block;
+        color: white;
+        padding: 16px;
+        font-size: 15px;
+        text-decoration: none;
+      }
+
+      .sidebar a.active {
+        background-color:#9FA6B2;
+        color: white;
+        font-size: 15px;
+      }
+    
+      .sidenav-bar div:hover:not(.active) {
+        background-color:#9FA6B2;
+        color: white;
+        font-size: 15px;
+      }
+    
+      div.content {
+        margin-left: 250px;
+        padding: 1px 16px;
+        font-size: large;
+      }
+    
+      @media screen and (max-width: 700px) {
+        .sidebar {
+          width: 100%;
+          height: auto;
+          position: relative;
+        }
+        .sidebar a {float: left;}
+        div.content {margin-left: 0;}
+      }
+    
+      @media screen and (max-width: 400px) {
+        .sidebar a {
+          text-align: center;
+          float: none;
+        }
+      }
+    
+      #myDiv {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+      #myDiv input {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .active{ 
+        background-color: #3B71CA;
+      }
+      </style>
+    </head>
+    <body>
+    
+      <div class="sidebar">
+          <div class="d-flex">
+            <div class="my-3 m-3">
+              <div id="myDiv" class="my-auto d-flex">
+                {% csrf_token %}
+                {% if user %}
+                    {% if user.profile_img %}
+                      <img id="imgFileUpload" style="cursor: pointer" src="{{user.profile_img.url}}"  class="mt-10"  alt="img**" onclick="openFileInput()"></img>
+                      <input type="file" id="FileUpload1" style="display: none" >
+                    {% endif %}
+                {% endif %}
+                {% if user.profile1.url %}
+                  <img id="imgFileUpload" style="cursor: pointer" onclick="openFileInput()" src="{{user.profile1.url}}" alt="profile-"  />
+                  <form>
+                    {% csrf_token %}
+                    <input type="file" id="FileUpload1" style="display: none" >
+                  </form>
+                {% endif %}
+                {% if not users.user %}
+                  {% for i in users|slice:":1"%}
+                      <img id="imgFileUpload" style="cursor: pointer" onclick="openFileInput()" src="{{i.user.profile_img.url}}" alt="profile-**" />
+                      <input type="file" id="FileUpload1" style="display: none" >
+                  {% endfor %} 
+                {% endif %}
+                {% if users.user %}
+                  <img id="imgFileUpload" style="cursor: pointer" onclick="openFileInput()" src="{{users.user.profile_img.url}}" alt="p" />
+                  <input type="file" id="FileUpload1" style="display: none" >
+                {% endif %}
+                {% if subject.user %}
+                  <img id="imgFileUpload" style="cursor: pointer" onclick="openFileInput()" src="{{subject.user.profile_img.url}}" alt="p" />
+                  <input type="file" id="FileUpload1" style="display: none" >
+                {% endif %}
+              </div>
+            </div>
+            <div class="text-white h3 px-md-4 my-auto">
+              {{user.first_name}}
+              {% if users  %}
+                {% for i in users|slice:":1"%}
+                    {{i.user.first_name}}
+                {% endfor %} 
+              {% endif %}
+              {% if subject.user %}
+                {{subject.user.first_name}}
+              {% endif %}
+              {{users.first_name}}
+              {{users.user.first_name}}
+            </div>
+          </div>
+        <hr>
+        <div class="sidenav-bar">
+          <div class="d-flex">
+            <i class="fa-sharp fa-solid fa-circle-user"></i>
+            <a class="" href="/hodprofile/">Profile</a>
+          </div>
+        
+          <div class="d-flex">
+            <i class="fa-solid fa-users-gear"></i>
+            <a href="/manageteacher/">Manage Staff</a>
+          </div>
+        
+          <div class="d-flex">
+            <i class="fa-solid fa-user-graduate"></i>
+            <a href="/managestudent/">Manage Students</a>
+          </div>
+        
+          <div class="d-flex">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <a href="/managecourse/">Manage Course</a>
+          </div>
+        
+          <div class="d-flex">
+            <i class="fa-solid fa-book-open"></i>
+            <a href="/managesubject/">Manage Subject</a>
+          </div>
+        
+          <div class="d-flex">
+            <i class="fa-solid fa-calendar"></i>
+            <a href="/managesession/">Manage Course Session</a>
+          </div>
+        
+          <div class="d-flex">
+            <i class="fa-solid fa-wallet"></i>
+            <a href="/staffleaverequests/">Leave Requests</a>
+          </div>
+        
+          <div class="d-flex">
+            <i class="fa-solid fa-power-off "></i>
+            <a type="button" class="nav-link" data-toggle="modal" data-target=".bd-example-modal-sm">Logout</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-body">
+              Are You Sure You want to log out ? 
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <a class="btn btn-primary" href="/logout/" role="button">Confirm</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="content">
+        <div class="text-200px">
+          <h1 >Admin Panel <span class="text-capitalize"></span></h1>
+        </div>
+        {% block content %}
+      
+        {% endblock content %}
+      </div>  
+      <script>
+          $(".sidenav-bar > div").each(function() {
+              var navItem = $(this);
+              if (navItem.find("a").attr("href") == location.pathname) {
+                navItem.addClass("active");
+              }
+          });
+          function openFileInput() {
+            document.getElementById('FileUpload1').click();
+          }
+          document.getElementById('FileUpload1').addEventListener('change', function(event) {
+            var previewOnProfile = document.getElementById("imgFileUpload");
+            const file = event.target.files[0];
+            var reader = new FileReader();
+            reader.addEventListener(
+              "load",
+              function () {
+                  previewOnProfile.src = reader.result;
+              },
+            );
+            if (file) {
+                reader.readAsDataURL(file);
+                const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+                const fdata = new FormData();
+                const xhttp = new XMLHttpRequest();
+                const header = "X-CSRFToken";
+                fdata.append("uploaded_file", file);
+                xhttp.open("POST", "/editprofile/");
+                xhttp.setRequestHeader(header, csrftoken);
+                xhttp.send(fdata);
+                xhttp.onload = () => {
+                    if (xhttp.readyState === 4) {
+                        const received = xhttp.responseText;
+                        if (xhttp.status === 200) {
+                            previewOnProfile.setAttribute("src", received);
+                        } else {
+                          console.log("error here---")
+                        }
+                      }
+                };
+              }
+          });
+        
+      </script>
+      {% block js%}
+      {% endblock js%}
+    </body>
+</html>
